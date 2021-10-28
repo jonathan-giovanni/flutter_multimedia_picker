@@ -60,7 +60,7 @@ class _PickerDemoState extends State<_PickerDemo> {
 
       Provider.of<MediaProvider>(context,listen: false).addListener(() {
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent+700,
+          _scrollController.position.maxScrollExtent,
           curve: Curves.easeOut,
           duration: const Duration(milliseconds: 400),
         );
