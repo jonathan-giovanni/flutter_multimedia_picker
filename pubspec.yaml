@@ -37,9 +37,16 @@ dependencies:
   # This plugin generates thumbnail from video file or URL.
   video_thumbnail: ^0.4.3
   #A Flutter plugin for finding commonly used locations on the filesystem.
-  path_provider: ^2.0.5
+  path_provider: ^2.0.6
   # Compresses image as native plugin (Obj-C/Kotlin)
   flutter_image_compress: ^1.1.0
+  # A Flutter plugin for iOS, Android and Web allowing access to the device cameras.
+  camera: ^0.9.4+3
+  # A flutter package which is clone of facebook messenger gallery picker and camera, combined as single component.
+  likk_picker: ^1.1.2
+  # A wrapper around InheritedWidget to make them easier to use and more reusable.
+  provider: ^6.0.1
+  
 
 dev_dependencies:
   flutter_test:
