@@ -1,7 +1,9 @@
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_multimedia_picker/provider/media.dart';
+import 'package:flutter_multimedia_picker/provider/media_file.dart';
 import 'package:flutter_multimedia_picker/provider/media_provider.dart';
+import 'package:flutter_multimedia_picker/util/app_util.dart';
 import 'package:flutter_multimedia_picker/widgets/media_item_widget.dart';
 import 'package:likk_picker/likk_picker.dart';
 import 'package:provider/provider.dart';
@@ -46,19 +48,12 @@ class _PickerDemo extends StatefulWidget {
 }
 
 class _PickerDemoState extends State<_PickerDemo> {
-  final ScrollController _scrollController = new ScrollController();
+  final ScrollController _scrollController = ScrollController();
   late final GalleryController controller;
-
-  _onPressed(BuildContext context) {
-    print('pressed');
-  }
 
   void _scrollToBeginning() {
     WidgetsBinding.instance!.addPostFrameCallback((_) {
-
-
-
-      Provider.of<MediaProvider>(context,listen: false).addListener(() {
+      Provider.of<MediaProvider>(context, listen: false).addListener(() {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           curve: Curves.easeOut,
@@ -70,78 +65,57 @@ class _PickerDemoState extends State<_PickerDemo> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _saveFilePicked(LikkEntity data) async {
+    File? file = await data.entity.file;
+    data.entity.videoDuration.inSeconds.toString();
+    Provider.of<MediaProvider>(context, listen: false).addMedia(
+      MediaItemWidget(
+        media: MediaFile(
+          file: file!,
+          path: file.path,
+          type: AppUtil.mediaType(data.entity.type.toString()),
+          duration: data.entity.videoDuration.inSeconds,
+        ),
+      ),
+    );
   }
 
   @override
   void initState() {
     super.initState();
-
     _scrollToBeginning();
-
     controller = GalleryController(
-
-      headerSetting: HeaderSetting(),
+      headerSetting: const HeaderSetting(),
       gallerySetting: GallerySetting(
         backAndUnselect: () {
           return true;
         },
-
         selectionCountRingColor: Colors.amberAccent,
         selectionCountRingSize: 6,
         enableCamera: true,
-
         maximum: 30,
         requestType: RequestType.all,
-
         cameraItemWidget: CameraViewField(
-
-
-          videoDuration: Duration(seconds: 30),
+          videoDuration: const Duration(seconds: 30),
           child: Container(
               color: Colors.white,
-              child: Icon(
+              child: const Icon(
                 Icons.camera_alt,
                 size: 40,
               )),
           onCapture: (element) async {
-            print('captured ' + element.toString());
-            print('duration ' +
-                element.entity.videoDuration.inSeconds.toString());
-            var file = await element.entity.file;
-            print('path ' + file!.path);
-            print('DURATION ' +
-                element.entity.videoDuration.inSeconds.toString());
-            Provider.of<MediaProvider>(context, listen: false).addMedia(
-              MediaItemWidget(
-                media: Media(
-                  file: file,
-                  path: file.path,
-                  type: element.entity.type
-                      .toString()
-                      .toLowerCase()
-                      .contains('video')
-                      ? 'video'
-                      : 'image',
-                  duration: element.entity.videoDuration.inSeconds,
-                ),
-              ),
-            );
-
+            await _saveFilePicked(element);
             Navigator.of(context).pop();
           },
         ),
-        actionButton:
-        null, //Center(child: FloatingActionButton(child: Text("data"),onPressed: _onPressed(context),)),
-        //cameraItemWidget: CameraView(videoDuration: Duration(seconds: 30))
+        actionButton: null,
       ),
-      panelSetting: PanelSetting(maxHeight: 24.0),
+      panelSetting: const PanelSetting(maxHeight: 24.0),
     );
-
-
-    print('cameraItemWidget ' + controller.setting.cameraItemWidget.toString());
   }
 
   @override
@@ -160,38 +134,14 @@ class _PickerDemoState extends State<_PickerDemo> {
                     onPressed: () async {
                       print('clear');
                       controller.clearSelection();
-
-
                       print('calling picker');
                       List<LikkEntity> data = await controller.pick(context);
                       data.forEach((element) async {
-                        print('element');
-                        var file = await element.entity.file;
-                        print('TYPE     ' + element.entity.type.toString());
-                        print('PATH     ' + file!.path.toString());
-                        print('DURATION ' +
-                            element.entity.videoDuration.inSeconds.toString());
-                        Provider.of<MediaProvider>(context, listen: false)
-                            .addMedia(
-                          MediaItemWidget(
-                            media: Media(
-                              file: file,
-                              path: file.path,
-                              type: element.entity.type
-                                  .toString()
-                                  .toLowerCase()
-                                  .contains('video')
-                                  ? 'video'
-                                  : 'image',
-                              duration: element.entity.videoDuration.inSeconds,
-                            ),
-                          ),
-                        );
+                        await _saveFilePicked(element);
                       });
-                      //controller.clearSelection();
                     },
-                    child: Text('Imagenes o fotos de lista')),
-                SizedBox(height: 20),
+                    child: const Text('Imagenes o fotos de lista')),
+                const SizedBox(height: 20),
                 Expanded(child: mediaListWidget())
               ],
             ),
@@ -209,7 +159,7 @@ class _PickerDemoState extends State<_PickerDemo> {
           return provider.medias[index];
         },
       ),
-      child: Text('default'),
+      child: const Text('default'),
     );
   }
 }

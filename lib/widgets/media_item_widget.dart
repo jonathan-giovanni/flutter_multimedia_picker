@@ -4,12 +4,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:flutter_multimedia_picker/provider/media.dart';
+import 'package:flutter_multimedia_picker/provider/media_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class MediaItemWidget extends StatefulWidget {
-  final Media media;
+  final MediaFile media;
   MediaItemWidget({Key? key, required this.media}) : super(key: key);
 
   @override
@@ -18,21 +18,9 @@ class MediaItemWidget extends StatefulWidget {
 
 class _MediaItemWidgetState extends State<MediaItemWidget> with AutomaticKeepAliveClientMixin  {
 
-  var _quantity = TextEditingController();
-
   @override
   void initState() {
     super.initState();
-  }
-
-  Future<File> getImageFileFromAssets(String path) async {
-    final byteData = await rootBundle.load('assets/$path');
-
-    final file = File('${(await getTemporaryDirectory()).path}/$path');
-    await file.writeAsBytes(byteData.buffer
-        .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
-
-    return file;
   }
 
   Future<File> getThumbnail() async {
@@ -79,7 +67,6 @@ class _MediaItemWidgetState extends State<MediaItemWidget> with AutomaticKeepAli
 
   @override
   void dispose() {
-    _quantity.dispose();
     super.dispose();
   }
 
@@ -103,7 +90,6 @@ class _MediaItemWidgetState extends State<MediaItemWidget> with AutomaticKeepAli
                 leading: CircularProgressIndicator(),
               );
             }
-            return CircularProgressIndicator();
           },
         ),
       ),
