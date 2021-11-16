@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_multimedia_picker/provider/media_file.dart';
+import 'package:flutter_multimedia_picker/provider/media_provider.dart';
+import 'package:flutter_multimedia_picker/util/app_util.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:provider/provider.dart';
 
 class MediaItemWidget extends StatefulWidget {
   final MediaFile media;
@@ -16,8 +19,8 @@ class MediaItemWidget extends StatefulWidget {
   _MediaItemWidgetState createState() => _MediaItemWidgetState();
 }
 
-class _MediaItemWidgetState extends State<MediaItemWidget> with AutomaticKeepAliveClientMixin  {
-
+class _MediaItemWidgetState extends State<MediaItemWidget>
+    with AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     super.initState();
@@ -36,10 +39,8 @@ class _MediaItemWidgetState extends State<MediaItemWidget> with AutomaticKeepAli
     print('getThumbnailImage: ' + widget.media.path);
     var dir = await getTemporaryDirectory();
     var tempPath = dir.absolute.path;
-
-    var now = DateTime.now().microsecondsSinceEpoch;
-    var random = new Random().nextInt(100);
-    tempPath += '/$now$random.jpg';
+    final name = AppUtil.generateUUID();
+    tempPath += '/$name.jpg';
 
     print('tempPath: ' + tempPath);
 
@@ -55,6 +56,7 @@ class _MediaItemWidgetState extends State<MediaItemWidget> with AutomaticKeepAli
 
   Future<File> getThumbnailVideo() async {
     print('getThumbnailVideo: ' + widget.media.path);
+
     final thumbnailFile = await VideoThumbnail.thumbnailFile(
       video: widget.media.path,
       thumbnailPath: (await getTemporaryDirectory()).path,
@@ -70,32 +72,50 @@ class _MediaItemWidgetState extends State<MediaItemWidget> with AutomaticKeepAli
     super.dispose();
   }
 
+  Widget _trailingIcon() {
+    switch (widget.media.compressionStatus) {
+      case FileStatus.PENDING:
+      case FileStatus.COMPRESSING:
+      case FileStatus.UPLOADING:
+        return const Icon(Icons.pause);
+      case FileStatus.CANCELED:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.refresh),
+            SizedBox(width: 10),
+            Icon(Icons.delete),
+          ],
+        );
+      default:
+        return const Icon(Icons.delete);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    print('**** build ****');
     super.build(context);
     return Card(
       child: Container(
-        padding: const EdgeInsets.only(top: 2, bottom: 2),
-        child: FutureBuilder(
-          future: Future.wait([getThumbnail()]),
-          builder: (context, AsyncSnapshot<List> snapshot) {
-            if (snapshot.hasData) {
-              return ListTile(
-                leading: AspectRatio(
-                  aspectRatio: 4 / 3,
-                  child: Image.file(snapshot.data![0]),
-                ),
-                title: Text(widget.media.description),
-              );
-            } else {
-              return ListTile(
-                leading: const CircularProgressIndicator(),
-                title: Text(widget.media.description),
-              );
-            }
-          },
-        ),
-      ),
+          padding: const EdgeInsets.only(top: 2, bottom: 2),
+          child: ListTile(
+            leading: const AspectRatio(
+              aspectRatio: 4 / 3,
+              child: Icon(Icons.image),
+            ),
+            title: Text(widget.media.description),
+            trailing: _trailingIcon(),
+            onTap: () {
+              //change widget.media.description value on setState
+              setState(() {
+                //widget.media.description = 'Changed';
+                //widget.media.compressionStatus = FileStatus.CANCELED;
+                //delete with MediaProvider using context.read
+                context.read<MediaProvider>().delete(widget.media);
+              });
+            },
+          )),
     );
   }
 

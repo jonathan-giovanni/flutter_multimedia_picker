@@ -72,14 +72,12 @@ class _PickerDemoState extends State<_PickerDemo> {
   Future<void> _saveFilePicked(LikkEntity data) async {
     File? file = await data.entity.file;
     data.entity.videoDuration.inSeconds.toString();
-    Provider.of<MediaProvider>(context, listen: false).addMedia(
-      MediaItemWidget(
-        media: MediaFile(
-          file: file!,
-          path: file.path,
-          type: AppUtil.mediaType(data.entity.type.toString()),
-          duration: data.entity.videoDuration.inSeconds,
-        ),
+    await Provider.of<MediaProvider>(context, listen: false).addMedia(
+      MediaFile(
+        file: file!,
+        path: file.path,
+        type: AppUtil.mediaType(data.entity.type.toString()),
+        duration: data.entity.videoDuration.inSeconds,
       ),
     );
   }
@@ -142,6 +140,14 @@ class _PickerDemoState extends State<_PickerDemo> {
                     },
                     child: const Text('Pick images and videos')),
                 const SizedBox(height: 20),
+                ElevatedButton(
+                    onPressed: () async {
+                      print('calling clear provider');
+                      await Provider.of<MediaProvider>(context, listen: false)
+                          .clear();
+                    },
+                    child: const Text('Clear List')),
+                const SizedBox(height: 20),
                 Expanded(child: mediaListWidget())
               ],
             ),
@@ -150,16 +156,19 @@ class _PickerDemoState extends State<_PickerDemo> {
   }
 
   Widget mediaListWidget() {
+    //watch changes on provider MediaProvider
     return Consumer<MediaProvider>(
-      builder: (_, provider, widget) => ListView.builder(
-        cacheExtent: 50,
-        controller: _scrollController,
-        itemCount: provider.medias.length,
-        itemBuilder: (context, index) {
-          return provider.medias[index];
-        },
-      ),
-      child: const Text('default'),
+      builder: (context, provider, _) {
+        return ListView.builder(
+          controller: _scrollController,
+          itemCount: provider.medias.length,
+          itemBuilder: (context, index) {
+            return MediaItemWidget(
+              media: provider.medias[index],
+            );
+          },
+        );
+      },
     );
   }
 }

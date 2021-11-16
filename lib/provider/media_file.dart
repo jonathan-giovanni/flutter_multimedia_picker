@@ -1,20 +1,64 @@
 import 'dart:io';
 
-enum CompressionStatus { PROCESSING, PENDING, COMPLETED, CANCELED }
+import 'package:async/async.dart';
+
+enum FileStatus { PENDING, COMPRESSING, UPLOADING, COMPLETED, CANCELED }
 
 class MediaFile {
-  String description = "initial";
+  String description = "Pending";
   final String type;
   final String path;
-  final File file;
+  late final File file;
   final int duration;
-  CompressionStatus compressionStatus = CompressionStatus.PENDING;
+  FileStatus compressionStatus = FileStatus.PENDING;
+  late Stream compressionStatusStream;
+  late CancelableCompleter completer;
 
   MediaFile({
     required this.type,
     required this.path,
     required this.file,
     required this.duration,
-    this.compressionStatus = CompressionStatus.PENDING,
+    this.compressionStatus = FileStatus.PENDING,
   });
+
+  Stream<MediaFile> init() async* {
+
+    await Future.delayed(Duration(seconds: 3), () => {
+          print("pending"),
+        });
+
+
+    compressionStatus = FileStatus.PENDING;
+    yield this;
+
+    //yield FileStatus.PENDING;
+
+    await Future.delayed(Duration(seconds: 2), () => {
+      print("compressing"),
+    });
+
+
+    compressionStatus = FileStatus.COMPRESSING;
+
+   // yield FileStatus.COMPRESSING;
+
+    await Future.delayed(Duration(seconds: 3), () => {
+      print("uploading"),
+    });
+
+
+    compressionStatus = FileStatus.UPLOADING;
+
+    //yield FileStatus.UPLOADING;
+
+    await Future.delayed(Duration(seconds: 3), () => {
+      print("completed"),
+    });
+
+
+    compressionStatus = FileStatus.COMPLETED;
+
+    //yield FileStatus.COMPLETED;
+  }
 }
