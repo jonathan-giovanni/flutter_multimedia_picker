@@ -9,6 +9,11 @@ class MediaProvider extends ChangeNotifier{
   Future<void> addMedia(MediaItemWidget widget) async {
     medias.add(widget);
     notifyListeners();
+
+    //wait 4 seconds
+    await Future.delayed(Duration(seconds: 4));
+    widget.media.description = "changed";
+    notifyListeners();
   }
 
 }

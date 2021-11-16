@@ -140,7 +140,7 @@ class _PickerDemoState extends State<_PickerDemo> {
                         await _saveFilePicked(element);
                       });
                     },
-                    child: const Text('Imagenes o fotos de lista')),
+                    child: const Text('Pick images and videos')),
                 const SizedBox(height: 20),
                 Expanded(child: mediaListWidget())
               ],

@@ -72,9 +72,10 @@ class _MediaItemWidgetState extends State<MediaItemWidget> with AutomaticKeepAli
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Card(
       child: Container(
-        padding: EdgeInsets.only(top: 2, bottom: 2),
+        padding: const EdgeInsets.only(top: 2, bottom: 2),
         child: FutureBuilder(
           future: Future.wait([getThumbnail()]),
           builder: (context, AsyncSnapshot<List> snapshot) {
@@ -84,10 +85,12 @@ class _MediaItemWidgetState extends State<MediaItemWidget> with AutomaticKeepAli
                   aspectRatio: 4 / 3,
                   child: Image.file(snapshot.data![0]),
                 ),
+                title: Text(widget.media.description),
               );
             } else {
               return ListTile(
-                leading: CircularProgressIndicator(),
+                leading: const CircularProgressIndicator(),
+                title: Text(widget.media.description),
               );
             }
           },
