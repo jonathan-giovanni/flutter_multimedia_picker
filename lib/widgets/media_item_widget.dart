@@ -19,6 +19,8 @@ class MediaItemWidget extends StatefulWidget {
   _MediaItemWidgetState createState() => _MediaItemWidgetState();
 }
 
+
+
 class _MediaItemWidgetState extends State<MediaItemWidget>
     with AutomaticKeepAliveClientMixin {
   @override
@@ -72,23 +74,61 @@ class _MediaItemWidgetState extends State<MediaItemWidget>
     super.dispose();
   }
 
-  Widget _trailingIcon() {
-    switch (widget.media.compressionStatus) {
+  Widget _progressIcon() {
+    //switch status
+    switch (widget.media.status) {
       case FileStatus.PENDING:
       case FileStatus.COMPRESSING:
       case FileStatus.UPLOADING:
-        return const Icon(Icons.pause);
+        return CircularProgressIndicator();
+      case FileStatus.COMPLETED:
+        return Image.file(widget.media.file);
+      default:
+        return Icon(Icons.image);
+    }
+  }
+
+  Widget _trailingIcon() {
+    switch (widget.media.status) {
+      case FileStatus.PENDING:
+      case FileStatus.COMPRESSING:
+      case FileStatus.UPLOADING:
+        return InkWell(
+            child: const Icon(Icons.cancel),
+            onTap: () {
+              Provider.of<MediaProvider>(context, listen: false)
+                  .cancelUpload(widget.media);
+            },
+          );
       case FileStatus.CANCELED:
         return Row(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.refresh),
-            SizedBox(width: 10),
-            Icon(Icons.delete),
+          children: [
+            InkWell(
+              child: const Icon(Icons.refresh),
+              onTap: () {
+                Provider.of<MediaProvider>(context, listen: false)
+                    .retryUpload(widget.media);
+              },
+            ),
+            const SizedBox(width: 15),
+            InkWell(
+              child: const Icon(Icons.delete),
+              onTap: () {
+                Provider.of<MediaProvider>(context, listen: false)
+                    .delete(widget.media);
+              },
+            ),
           ],
         );
       default:
-        return const Icon(Icons.delete);
+        return InkWell(
+          child: const Icon(Icons.delete),
+          onTap: () {
+            Provider.of<MediaProvider>(context, listen: false)
+                .delete(widget.media);
+          },
+        );
     }
   }
 
@@ -100,10 +140,10 @@ class _MediaItemWidgetState extends State<MediaItemWidget>
       child: Container(
           padding: const EdgeInsets.only(top: 2, bottom: 2),
           child: ListTile(
-            leading: const AspectRatio(
-              aspectRatio: 4 / 3,
-              child: Icon(Icons.image),
-            ),
+            //leading circular progress
+            leading:  _progressIcon(),
+
+
             title: Text(widget.media.description),
             trailing: _trailingIcon(),
             onTap: () {

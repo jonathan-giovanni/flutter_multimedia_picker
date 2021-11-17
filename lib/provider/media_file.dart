@@ -4,22 +4,28 @@ import 'package:async/async.dart';
 
 enum FileStatus { PENDING, COMPRESSING, UPLOADING, COMPLETED, CANCELED }
 
+class FileType{
+  static const String IMAGE = "image";
+  static const String VIDEO = "video";
+}
+
 class MediaFile {
-  String description = "Pending";
+  String description = "Pendiente";
   final String type;
   final String path;
-  late final File file;
+  late File file;
   final int duration;
-  FileStatus compressionStatus = FileStatus.PENDING;
+  late FileStatus status = FileStatus.PENDING;
   late Stream compressionStatusStream;
   late CancelableCompleter completer;
+  late double aspectRatio = 0;
 
   MediaFile({
     required this.type,
     required this.path,
     required this.file,
     required this.duration,
-    this.compressionStatus = FileStatus.PENDING,
+    this.status = FileStatus.PENDING,
   });
 
   Stream<MediaFile> init() async* {
@@ -29,7 +35,7 @@ class MediaFile {
         });
 
 
-    compressionStatus = FileStatus.PENDING;
+    status = FileStatus.PENDING;
     yield this;
 
     //yield FileStatus.PENDING;
@@ -39,7 +45,7 @@ class MediaFile {
     });
 
 
-    compressionStatus = FileStatus.COMPRESSING;
+    status = FileStatus.COMPRESSING;
 
    // yield FileStatus.COMPRESSING;
 
@@ -48,7 +54,7 @@ class MediaFile {
     });
 
 
-    compressionStatus = FileStatus.UPLOADING;
+    status = FileStatus.UPLOADING;
 
     //yield FileStatus.UPLOADING;
 
@@ -57,7 +63,7 @@ class MediaFile {
     });
 
 
-    compressionStatus = FileStatus.COMPLETED;
+    status = FileStatus.COMPLETED;
 
     //yield FileStatus.COMPLETED;
   }
